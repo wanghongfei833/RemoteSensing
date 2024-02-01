@@ -1,0 +1,56 @@
+# 文件主要为遥感影像的语义分割Demo
+# 第一步 绘制数据集
+image_label
+    文件中主要保存了模型的训练数据集。
+    tif_merge:
+        该文件夹中保留了 裁剪的name.shp文件、name.tif、name_mask.tif。
+        name.tif和name_mask.tif的大小必须一致。
+        name_mask.tif
+            主要由自己在arcgis中进行标签绘制，随后shp-->tif，将命名定为name_mask.tif
+        name.tif
+            原始的遥感影像
+        name.shp
+            在上述的文件中进行框选的shp（自选的可以使用的标签）
+# 第二步 制作数据集
+make_datasets.py
+    tif_list 是tif的图像 [name1.tif,name2.tif,name3.tif,...]
+    mask_list 是tif的图像 [name1_mask.tif,name2_mask.tif,name3_mask.tif,...]
+    shp_list 是tif的图像 [name.shp,name.shp,name.shp,...]
+
+# 第三步 模型训练
+# train
+
+    A: 首先修改parse_args函数中的参数。
+        1、data-path表示了数据的根路径，如果运行了make_datasets.py，默认的根路径应该为image_label\result。
+        2、image_name、mask_name 对应这 图像和掩膜的名称
+        3、image_size 对应模型训练的图像尺寸
+        4、split_data 对应数据的分割点，如split为0.8 那么就是0-80%作为train_data，剩下的作为test_data
+        5、model_name 表示模型的类型，按照提示选择
+        6、其余参数为对应的表述
+
+    B: 其次进行均值计算
+        1、将 get_mean_std 函数取消注释，同时将my_dataset.py的文件中第35行的T.Normalize(mean=mean, std=std)进行注释
+        2、随后将运行输出的结果对应着填入到my_dataset.py的12-13行中
+        3、将get_mean_std注释，同时my_dataset.py的文件中第35行的T.Normalize(mean=mean, std=std)取消注释
+
+    C: 点击重新运行即可进行训练
+
+    D: 查看训练的过程
+        1、首先在命令行中进入到对应的环境
+        2、其次将路径切换到当前的路径中
+        3、运行 python -m tensorboard.main --logdir runs
+        4、点击 对应网址即可查看
+
+
+# predict.py
+# 预测文件
+    PredictTif 为预测的类，主要参数在其中详细描述
+    tiff_list 是对应的需要预测的 tif 列表  [xxx.tif,xxx.tif,xxx.tif]
+
+
+# gdal_merge.py
+# tif进行拼接
+    MergeTIF
+        root 表示要拼接的根路径
+        save_root 表示保存的文件路径
+        remove 表示 在拼接完成后是否删除源文件
