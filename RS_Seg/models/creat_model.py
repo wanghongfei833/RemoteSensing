@@ -12,3 +12,6 @@ def create_model(num_classes, in_channels, model_name,loss_fun):
     else:
         return deeplabel_v3p(num_classes, in_channels,loss_fun)
 
+
+if __name__ == '__main__':
+    create_model(2,3,"deep","bce")

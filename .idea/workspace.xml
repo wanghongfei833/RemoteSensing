@@ -4,16 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e10c063b-707d-4355-acb1-67b1fb2807f3" name="更改" comment="修改了ulits文件，让数据集制作更加额合适">
+    <list default="true" id="e10c063b-707d-4355-acb1-67b1fb2807f3" name="更改" comment="添加fun参数">
+      <change afterPath="$PROJECT_DIR$/RS_Seg/runs/deeplabv3p1/events.out.tfevents.1712135968.DESKTOP-N23F03N.30336.0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/RS_Seg/runs/deeplabv3p2/events.out.tfevents.1712136079.DESKTOP-N23F03N.7448.0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/RS_Seg/runs/deeplabv3p3/events.out.tfevents.1712136086.DESKTOP-N23F03N.16104.0" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RS_Seg/models/creat_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/creat_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RS_Seg/models/deepLab.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/deepLab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/_deeplab.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/_deeplab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/modeling.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/modeling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/models/swin_transform.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/swin_transform.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/unet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/_deeplab.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/backbone/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/backbone/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/backbone/hrnetv2.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/backbone/hrnetv2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/backbone/mobilenetv2.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/backbone/mobilenetv2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/backbone/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/backbone/resnet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/backbone/xception.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/models/backbone/xception.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/modeling.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RS_Seg/models/deeplab/network/utils.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/RS_Seg/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/train_utils/train_and_eval.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/train_utils/train_and_eval.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RS_Seg/ulits.py" beforeDir="false" afterPath="$PROJECT_DIR$/RS_Seg/ulits.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,14 +44,18 @@
   &quot;associatedIndex&quot;: 3
 }</component>
   <component name="ProjectId" id="2bcb6c4e0f7YJOjk1enMUyetMzl" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Python 测试.Doctests (deepLab 内).executor": "Run",
     "Python.main (1).executor": "Run",
     "Python.train.executor": "Debug",
     "Python.ulits.executor": "Run",
@@ -58,6 +69,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Projects\RemoteSensing\RS_Seg\models" />
       <recent name="D:\Projects\RemoteSensing\RS_Seg\checkpoint" />
       <recent name="D:\Projects\RemoteSensing\RS_Seg" />
       <recent name="D:\Projects\RemoteSensing\RS_Seg\models\deeplab" />
@@ -152,9 +164,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Doctests (deepLab 内)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="RemoteSensing" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/RS_Seg/models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/RS_Seg/models/deepLab.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.train" />
+        <item itemvalue="Python 测试.Doctests (deepLab 内)" />
         <item itemvalue="Python.ulits" />
         <item itemvalue="Python.main (1)" />
       </list>
@@ -219,7 +251,23 @@
       <option name="project" value="LOCAL" />
       <updated>1712132912768</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="添加fun参数">
+      <option name="closed" value="true" />
+      <created>1712135434921</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1712135434921</updated>
+    </task>
+    <task id="LOCAL-00007" summary="添加fun参数">
+      <option name="closed" value="true" />
+      <created>1712135456953</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1712135456953</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -234,22 +282,13 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
     <MESSAGE value="Initial commit" />
     <MESSAGE value="修改了ulits文件，让数据集制作更加额合适" />
-    <option name="LAST_COMMIT_MESSAGE" value="修改了ulits文件，让数据集制作更加额合适" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/RS_Seg/models/deeplab/network/_deeplab.py</url>
-          <line>30</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="添加fun参数" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加fun参数" />
   </component>
 </project>

@@ -13,12 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def main(args):
-    # 创建学习率更新策略，这里是每个step更新一次(不是每个epoch)
-    train_loader, val_loader = create_datasets(args)
-    # -------------------- 查看数据集--------------
-    # data_load(train_loader)
-    # ------------     计算 均值方差 ----------------
-    # get_mean_std(train_loader)
+
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
     # segmentation nun_classes + background
     num_classes = args.num_classes
@@ -34,6 +29,13 @@ def main(args):
     results_file = "log/{}_results{}.txt".format(model_name, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     model = create_model(num_classes, in_channels, model_name,loss_fun)
     model.to(device)
+
+    # 创建学习率更新策略，这里是每个step更新一次(不是每个epoch)
+    train_loader, val_loader = create_datasets(args)
+    # -------------------- 查看数据集--------------
+    # data_load(train_loader)
+    # ------------     计算 均值方差 ----------------
+    # get_mean_std(train_loader)
     params = [p for p in model.parameters() if p.requires_grad]
     params_to_optimize = [
         {"params": params},
@@ -119,13 +121,12 @@ def parse_args():
     # Model
     parser.add_argument("--in_channels", default=3, help="模型的输入通道数量")
     parser.add_argument("--num_classes", default=2, help="模型的分类数量")
-    parser.add_argument("--model_name", default="deep",
-                        choices=["swin", "unet", "deep"], help="模型名称")
+    parser.add_argument("--model_name", default="deep", choices=["swin", "unet", "deep"])
 
     # Hpy Parameter
     parser.add_argument("--device", default="cuda", help="training device")
     parser.add_argument("-b", "--batch-size", default=32, type=int)
-    parser.add_argument("--epochs", default=200, type=int, metavar="N", help="number of total epochs to train")
+    parser.add_argument("--epochs", default=200, type=int, metavar="N")
     parser.add_argument('--print-freq', default=3, type=int, help='需要打印的轮次数目')
     # Optime
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
