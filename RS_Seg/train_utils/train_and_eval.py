@@ -54,6 +54,38 @@ def criterion(inputs, target):
     return nn.functional.cross_entropy(inputs, target, ignore_index=255)
 
 
+def bce(inputs, target):
+    return torch.mean((inputs - target) ** 2)
+
+
+def train_one_epoch(model, optimizer, data_loader, device, epoch, lr_scheduler, print_freq=3, scaler=None, loss_fun="bce"):
+    model.train()
+    metric_logger = utils.MetricLogger(delimiter="  ")
+    metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
+    header = 'train : Epoch: [{}]'.format(epoch)
+    for image, target in metric_logger.log_every(data_loader, max(len(data_loader) // print_freq, 1), header):
+        image, target = image.to(device), target.to(device)
+        with torch.cuda.amp.autocast(enabled=scaler is not None):
+            try:
+                output = model(image)
+            except Exception as e:
+                output = model(image.repeat(2, 1, 1, 1))
+                target = target.repeat(2, 1, 1)
+            loss = criterion(output, target) if loss_fun == "criterion" else bce(output, target)
+        optimizer.zero_grad()
+        if scaler is not None:
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            loss.backward()
+            optimizer.step()
+        lr_scheduler.step()
+        lr = optimizer.param_groups[0]["lr"]
+        metric_logger.update(loss=loss, lr=lr)
+    return metric_logger.meters["loss"].global_avg, lr
+
+
 def evaluate(model, data_loader, device, num_classes, epoch, print_freq=3):
     model.eval()
     os.makedirs('sample', exist_ok=True)
@@ -88,48 +120,6 @@ def evaluate(model, data_loader, device, num_classes, epoch, print_freq=3):
         confmat.reduce_from_all_processes()
 
     return confmat
-
-
-def train_one_epoch(model, optimizer, data_loader, device, epoch, lr_scheduler, print_freq=3, scaler=None):
-    model.train()
-    metric_logger = utils.MetricLogger(delimiter="  ")
-    metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
-    header = 'train : Epoch: [{}]'.format(epoch)
-
-    run_loss = 0.
-    total = 0
-    for image, target in metric_logger.log_every(data_loader, max(len(data_loader) // print_freq, 1), header):
-        total += 1
-        # for image, target in data_loader:
-        image, target = image.to(device), target.to(device)
-        # uq = torch.unique(target)
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
-            try:
-                output = model(image)
-            except:
-                output = model(image.repeat(2, 1, 1, 1))
-                target = target.repeat(2, 1, 1)
-            loss = criterion(output, target)
-        optimizer.zero_grad()
-        if scaler is not None:
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            loss.backward()
-            optimizer.step()
-
-        lr_scheduler.step()
-
-        lr = optimizer.param_groups[0]["lr"]
-        metric_logger.update(loss=loss, lr=lr)
-
-        # run_loss += loss.item()
-        # total += image.size(0)
-        # sys.stdout.write(f"\repoch:{epoch} loss:{loss.item():.5f}[{run_loss/total:.5f}] lr {lr:5f}")
-    # sys.stdout.write("\r\n")
-    return metric_logger.meters["loss"].global_avg, lr
-    # return run_loss/total,lr
 
 
 def create_lr_scheduler(optimizer,

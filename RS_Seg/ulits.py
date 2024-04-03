@@ -175,7 +175,7 @@ def get_mean_std(loader):
         num_batches += 1
     mean = channels_sum / num_batches
     std = (channels_squared_sum / num_batches - mean ** 2) ** 0.5
-    print('mean:', mean, '\n', 'std:', std)
+    print('mean:', np.round(mean,3), '\n', 'std:', np.round(std,3))
     sys.exit()
 
 

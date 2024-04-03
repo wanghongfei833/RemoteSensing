@@ -26,13 +26,16 @@ class DeepLabV3(_SimpleSegmentationModel):
 
 
 class DeepLabHeadV3Plus(nn.Module):
-    def __init__(self, in_channels, low_level_channels, num_classes, aspp_dilate=[12, 24, 36]):
+    def __init__(self, in_channels, low_level_channels, num_classes, aspp_dilate=None,loss_fun=None):
         super(DeepLabHeadV3Plus, self).__init__()
+        if aspp_dilate is None:
+            aspp_dilate = [12, 24, 36]
         self.project = nn.Sequential(
             nn.Conv2d(low_level_channels, 48, 1, bias=False),
             nn.BatchNorm2d(48),
             nn.ReLU(inplace=True),
         )
+
 
         self.aspp = ASPP(in_channels, aspp_dilate)
 
@@ -41,6 +44,11 @@ class DeepLabHeadV3Plus(nn.Module):
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
             nn.Conv2d(256, num_classes, 1)
+        ) if loss_fun!="bce" else  nn.Sequential(
+            nn.Conv2d(304, 256, 3, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 1, 1),nn.Sigmoid()
         )
         self._init_weight()
 

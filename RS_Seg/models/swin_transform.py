@@ -590,7 +590,7 @@ class UpSample(nn.Module):
 
 
 class Decouder(nn.Module):
-    def __init__(self, num_class):
+    def __init__(self, num_class, loss_fun):
         super().__init__()
         self.resdiu0 = Resdiu(1024)
         self.up1 = UpSample(1024, 2)  # 7x7--> 28x28
@@ -603,7 +603,8 @@ class Decouder(nn.Module):
         self.up4 = nn.Upsample(scale_factor=2)
         self.resdiu4 = Resdiu(128)
         self.up5 = nn.Upsample(scale_factor=2)  # 112x112-->224x224
-        self.last = nn.Sequential(nn.Conv2d(128, num_class, 3, 1, 1))
+        self.last = nn.Conv2d(128, num_class,kernel_size= 3, stride=1, padding=1) if loss_fun != "bce" \
+            else nn.Sequential(nn.Conv2d(128, 1, 3, 1, 1), nn.Sigmoid())
 
     def forward(self, x):
         stage1, stage2, stage3, stage4 = x
@@ -622,7 +623,7 @@ class Decouder(nn.Module):
 
 
 class Swin_Seg(nn.Module):
-    def __init__(self, num_class, in_channels=3):
+    def __init__(self, num_class, in_channels=3, loss_fun=None):
         super().__init__()
         self.backbone = swin_base_patch4_window7_224_in22k(in_channels=in_channels)
         self.error = []
@@ -633,7 +634,7 @@ class Swin_Seg(nn.Module):
                 self.backbone.k = v
             else:
                 self.error.append(k)
-        self.decoder = Decouder(num_class=num_class)
+        self.decoder = Decouder(num_class=num_class, loss_fun=loss_fun)
 
     def forward(self, x):
         with torch.no_grad():
@@ -652,8 +653,8 @@ def create_model(num_class, in_channels):
     return model
 
 
-def swin_res_unet(num_class, in_channels):
-    model = Swin_Seg(num_class, in_channels)
+def swin_res_unet(num_class, in_channels, loss_fun):
+    model = Swin_Seg(num_class, in_channels, loss_fun)
     for name, par in model.backbone.named_parameters():
         if name not in model.error:
             par.requires_grad = False

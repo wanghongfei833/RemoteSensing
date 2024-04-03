@@ -24,10 +24,15 @@ def main(args):
     num_classes = args.num_classes
     in_channels = args.in_channels
     model_name = args.model_name
+    loss_fun = args.loss_fun
+
+    if num_classes!=2 and loss_fun =="bce":
+        print("错误,BCE loss 只能是 2分类,但是得到的是{}".format(num_classes))
+        loss_fun = 'criterion'
     # 用来保存训练以及验证过程中信息
     weight_root = "save_weights/{}".format(model_name)
     results_file = "log/{}_results{}.txt".format(model_name, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-    model = create_model(num_classes, in_channels, model_name)
+    model = create_model(num_classes, in_channels, model_name,loss_fun)
     model.to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     params_to_optimize = [
@@ -66,9 +71,8 @@ def main(args):
     write = SummaryWriter(get_path(args.resume, name=model.model_name))
 
     for epoch in range(args.start_epoch, args.epochs):
-        mean_loss, lr = train_one_epoch(model, optimizer, train_loader, device, epoch,
-                                        lr_scheduler, args.print_freq, scaler)
-        confmat = evaluate(model, val_loader, device, num_classes, epoch, args.print_freq)
+        mean_loss, lr = train_one_epoch(model, optimizer, train_loader, device, epoch,lr_scheduler, args.print_freq, scaler,loss_fun)
+        confmat = evaluate(model, val_loader, device, num_classes, epoch, args.print_freq,loss_fun)
         result = confmat.result()
         val_info = ""
         for index, (classes, source) in enumerate(result.items()):
@@ -114,20 +118,22 @@ def parse_args():
 
     # Model
     parser.add_argument("--in_channels", default=3, help="模型的输入通道数量")
-    parser.add_argument("--nums_class", default=2, help="模型的分类数量")
-    parser.add_argument("--model_name", default="swin",
+    parser.add_argument("--num_classes", default=2, help="模型的分类数量")
+    parser.add_argument("--model_name", default="deep",
                         choices=["swin", "unet", "deep"], help="模型名称")
 
-    # H P
+    # Hpy Parameter
     parser.add_argument("--device", default="cuda", help="training device")
     parser.add_argument("-b", "--batch-size", default=32, type=int)
     parser.add_argument("--epochs", default=200, type=int, metavar="N", help="number of total epochs to train")
     parser.add_argument('--print-freq', default=3, type=int, help='需要打印的轮次数目')
     # Optime
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
-    parser.add_argument('--wd', '--weight-decay', default=0, type=float,
-                        metavar='W', help='weight decay (default: 1e-4)',
-                        dest='weight_decay')
+    parser.add_argument('--wd', '--weight-decay', default=0, type=float,dest='weight_decay')
+    # Loss Function
+    parser.add_argument('--loss_fun', default='bce',choices=["bce","criterion"], type=str)
+
+    # Train
     parser.add_argument('--resume', default='', help='继续从第 i 个epoch进行训练')
     parser.add_argument('--frequency', default=1, help='模型的保存频率')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='start epoch')

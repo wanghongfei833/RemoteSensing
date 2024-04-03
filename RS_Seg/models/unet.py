@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 class UNet(nn.Module):
 
-    def __init__(self, in_channels=4, out_channels=1, init_features=32):
+    def __init__(self, in_channels=4, out_channels=1, init_features=32,loss_fun=None):
         super(UNet, self).__init__()
 
         features = init_features
@@ -45,6 +45,8 @@ class UNet(nn.Module):
 
         self.convs = nn.Conv2d(
             in_channels=features, out_channels=out_channels, kernel_size=1
+        ) if loss_fun!="bce" else nn.Sequential(
+            nn.Conv2d(features,1,3,1,1),nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -107,7 +109,7 @@ def create_model(numclass=21, in_channels=3):
     return model
 
 
-def unet(numclass=21, in_channels=3):
-    model = UNet(out_channels=numclass, in_channels=in_channels)
+def unet(numclass=21, in_channels=3,loss_fun=None):
+    model = UNet(out_channels=numclass, in_channels=in_channels,loss_fun=loss_fun)
     model.model_name = "Unet"
     return model
