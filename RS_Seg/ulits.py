@@ -162,10 +162,6 @@ class MergeTIF(object):
                 os.remove(i)
 
 
-def create_model(num_classes, in_channels, model_name="swin"):
-    return cm(num_classes, in_channels, model_name)
-
-
 def get_mean_std(loader):
     # Var[x] = E[X**2]-E[X]**2
     channels_sum, channels_squared_sum, num_batches = 0, 0, 0
@@ -175,7 +171,7 @@ def get_mean_std(loader):
         num_batches += 1
     mean = channels_sum / num_batches
     std = (channels_squared_sum / num_batches - mean ** 2) ** 0.5
-    print('mean:', np.round(mean,3), '\n', 'std:', np.round(std,3))
+    print('mean:', np.round(mean, 3), '\n', 'std:', np.round(std, 3))
     sys.exit()
 
 
@@ -268,7 +264,7 @@ class MakeDataSets(object):
         masks_dataset = gdal.Open(mask)
         width = image_dataset.RasterXSize
         height = image_dataset.RasterYSize
-        for col in range(0, width, blocks):
+        for col in tqdm(range(0, width, blocks),total=width//blocks):
             for row in range(0, height, blocks):
                 x_off = col if col + blocks <= width else width - col
                 y_off = row if row + blocks <= height else height - row
@@ -287,6 +283,86 @@ class MakeDataSets(object):
         else:
             cv2.imwrite(os.path.join(save_dir, f"{image_save}/{row}_{col}.jpg"), np.transpose(image_arr[:3], (1, 2, 0)))
             cv2.imwrite(os.path.join(save_dir, f"{label_save}/{row}_{col}.jpg"), np.transpose(masks_arr * 255, (1, 2, 0)))
+
+
+class ClipShpTif(object):
+    """
+    # 对tif和对应的shp裁剪成为数据集，需要在 MergeDataSets 运行以后执行
+    """
+
+    def __init__(self, pad_pix=0, min_length=200):
+        self.pad_pix = pad_pix  # 在自己的 shp 周边各延展的像素值
+        self.min_length = min_length  # 定义最小的 尺寸样本
+
+    def save_tif(self, out_dir, years, index, pos_x, pox_y, bands, transfrom, pro, data):
+        # # 创建新的保存影像的文件
+        output_tiff_path = os.path.join(out_dir, f'{years}_{index}.tif')
+        output_tiff = gdal.GetDriverByName('GTiff').Create(output_tiff_path, pos_x, pox_y, bands,
+                                                           gdal.GDT_Float32)
+
+        # 设置新文件的地理变换和投影信息
+        output_tiff.SetGeoTransform(transfrom)
+        output_tiff.SetProjection(pro)
+
+        # 设置新文件的 NoData 值
+        # 将影像数据写入新文件
+        for band in range(bands):
+            output_tiff.GetRasterBand(band + 1).SetNoDataValue(0)
+            output_tiff.GetRasterBand(band + 1).WriteArray(data[band])
+
+        # 关闭新文件
+        output_tiff = None
+
+    def get_pos(self, envelope, geo_transform, row, col):
+        ulx = int((envelope[0] - geo_transform[0]) / geo_transform[1])
+        uly = int((envelope[3] - geo_transform[3]) / geo_transform[5])
+        lrx = int((envelope[1] - geo_transform[0]) / geo_transform[1])
+        lry = int((envelope[2] - geo_transform[3]) / geo_transform[5])
+        return max(ulx - self.pad_pix, 0), max(0, uly - self.pad_pix), min(col, lrx + self.pad_pix), min(row,
+                                                                                                         lry + self.pad_pix)
+
+    def get_row_col(self, dataset):
+        cols = dataset.RasterXSize  # 图像长度
+        rows = dataset.RasterYSize  # 图像宽度
+        return rows, cols
+
+    def clip_tif_mask(self, tif, mask, shp, out, name):
+        """
+
+        :param tif: tif的路径
+        :param mask: mask 的路径
+        :param shp: 裁剪的shp
+        :param out: 输出路径
+        :param name: 名称
+        :return:
+        """
+        # 打开 Shapefile 文件
+        shp_dataset = ogr.Open(shp)
+        shp_layer = shp_dataset.GetLayer()
+        # 打开 TIFF 文件
+        tiff_dataset = gdal.Open(tif)
+        mask_dataset = gdal.Open(mask)
+        tiff_geo_transform = tiff_dataset.GetGeoTransform()
+        mask_geo_transform = mask_dataset.GetGeoTransform()
+        row_tif, col_tif = self.get_row_col(tiff_dataset)  # 图像长度
+        row_mask, col_mask = self.get_row_col(mask_dataset)  # 图像宽度
+        for index, feature in tqdm(enumerate(shp_layer, 1), total=len(shp_layer), desc=f"{name}"):
+            geom = feature.GetGeometryRef()
+            envelope = geom.GetEnvelope()
+            # 计算要素在 TIFF 文件中的像素坐标
+            ulx1, uly1, lrx1, lry1 = self.get_pos(envelope, tiff_geo_transform, row_tif, col_tif)
+            ulx2, uly2, lrx2, lry2 = self.get_pos(envelope, mask_geo_transform, row_mask, col_mask)
+            x_, y_ = lrx1 - ulx1, lry1 - uly1
+            if x_ > self.min_length and y_ > self.min_length:
+                tiff_data = tiff_dataset.ReadAsArray(ulx1, uly1, lrx1 - ulx1, lry1 - uly1)
+                tiff_data = ini_arr(tiff_data)[::-1]
+                mask_data = mask_dataset.ReadAsArray(ulx2, uly2, lrx2 - ulx2, lry2 - uly2)
+                mask_data[mask_data == 3] = 0
+                mask_data = mask_data * 255
+                if tiff_data is not None and mask_data is not None:
+                    img_data = np.transpose(tiff_data, (1, 2, 0))
+                    cv2.imwrite(os.path.join(out, f'image/{name}_{index}.png'), img_data)
+                    cv2.imwrite(os.path.join(out, f'mask/{name}_{index}.png'), mask_data)
 
 
 if __name__ == '__main__':
